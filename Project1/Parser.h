@@ -3,6 +3,7 @@
 #include <string>
 #include "Regex.h"
 #include "commandParser.h"
+#include "Files.h"
 using namespace std;
 //a static class with functions for checking a SQL statement
 class Parser {
@@ -47,7 +48,8 @@ public:
 					//drop parser
 					cout << "this is a drop command\n";
 					if (regexStatements::checkRegex(statement, regexStatements::getDropStatement())) {
-						cp.dropParser();
+						if (!cp.dropParser(err))
+							throw(err);
 					}
 					else {
 						err = "Drop command not properly formatted\nDROP [TABLE|INDEX] entity_name";
@@ -58,7 +60,8 @@ public:
 					//display parser
 					cout << "this is a display command\n";
 					if (regexStatements::checkRegex(statement, regexStatements::getDisplayStatement())) {
-						cp.displayParser();
+						if (!cp.displayParser(err))
+							throw(err);
 					}
 					else {
 						err = "Display command not properly formatted\nDISPLAY TABLE table_name;";
@@ -117,6 +120,18 @@ public:
 						throw(err);
 					}
 				}
+				else if (cp.getCommandType() == "IMPORT") {
+					//import parser
+					cout << "this is an import command\n";
+					if (regexStatements::checkRegex(statement, regexStatements::getImportStatement())) {
+						if (!cp.importParser(err))
+							throw(err);
+					}
+					else {
+						err = "Import command not properly formatted\nIMPORT tablename file.csv";
+						throw(err);
+					}
+				}
 				else {
 					err = "Invalid command type";
 					throw(err);
@@ -126,10 +141,13 @@ public:
 			cout << err << endl;
 			return 0;
 		}
+		catch (exception e) {
+			cout << e.what() << endl;
+			return 0;
+		}
 		/*catch (...) {
 
 		}*/
-
 		return 1;
 	}
 };
